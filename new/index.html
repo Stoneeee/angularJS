@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html ng-app="newsApp">
+
+	<head>
+		<meta charset="UTF-8">
+		<!--用在移动端，把PC端比例 1：1 还原在移动端显示-->
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>index</title>
+		<link rel="stylesheet" type="text/css" href="css/weui.css" />
+		<link rel="stylesheet" type="text/css" href="css/swiper.css" />
+		<script src="js/angular.js" type="text/javascript" charset="utf-8"></script>
+		<!--ui路由-->
+		<script src="js/angular-ui-router.js" type="text/javascript" charset="utf-8"></script>
+		<!--修复post请求的模块-->
+		<script src="js/ng-post.js" type="text/javascript" charset="utf-8"></script>
+		<!--轮播图-->
+		<script src="js/swiper.js" type="text/javascript" charset="utf-8"></script>
+	</head>
+
+	<body>
+		<div ui-view=""></div>
+	</body>
+	<script type="text/javascript">
+		// 定义angular程序的主模块，第一个参数是主模块的名字，跟ng-app绑定，第二个参数是引入其他子模块
+		var app = angular.module('newsApp', ['ng.post','routers', 'directives', 'controllers','services']);
+
+		// 路由模块，记得引入ui.router模块
+		var routers = angular.module('routers',['ui.router']);
+		routers.config(['$stateProvider', '$urlRouterProvider', function($stateProvider, $urlRouterProvider) {
+			$stateProvider.state('index', {
+				// state函数第一个参数，是表达路由关系，嵌套关系，如果有多层就用点连接
+				// url : 锚点后面要加路由名字
+				url: '/index',
+				controller: 'indexCtrl',
+				templateUrl: 'template/index.html'
+			}).state('index.recommend', {
+				url: '/recommend',
+				controller: 'recommendCtrl',
+				templateUrl: 'template/recommend.html'
+			}).state('index.hot', {
+				url: '/hot',
+				controller : 'hotCtrl',
+				templateUrl: 'template/hot.html'
+			}).state('index.happy', {
+				url: '/happy',
+				controller : 'happyCtrl',
+				templateUrl: 'template/happy.html'
+			}).state('search', {
+				url: '/search',
+				controller: 'searchCtrl',
+				templateUrl: 'template/search.html'
+			}).state('detail', {
+				url: '/detail/:id',
+				controller: 'detailCtrl',
+				templateUrl: 'template/detail.html'
+			}).state('insert', {
+				url: '/insert',
+				controller: 'insertCtrl',
+				templateUrl: 'template/insert.html'
+			}).state('login', {
+				url: '/login',
+				controller: 'loginCtrl',
+				templateUrl: 'template/login.html'
+			})
+
+			// 默认路由
+			$urlRouterProvider.when('', '/index/recommend');
+		}])
+
+		// 控制器模块
+		var controllers = angular.module('controllers', []);
+		// 首页控制器
+		controllers.controller('indexCtrl', ['$scope','$http','cookie','$window', function($scope,$http,cookie,$window) {
+			$http.post('http://10.16.155.28:81/news/php/index.php/login_api/auto_login',{
+				params : {
+					username : cookie.getCookie('username'),
+					token : cookie.getCookie('token')
+				}
+			}).success(function(data){
+				console.log(data);
+				if(data){
+					// success
+				}else{
+					$window.location.href = '#/login';
+				}
+			});
+			$scope.tabs = 1;
+			$scope.changeTab = function(tabs) {
+				$scope.tabs = tabs;
+			}
+		}])
+		// 推荐页控制器
+		.controller('recommendCtrl', ['$scope', '$http',function($scope, $http) {
+			$scope.imgList = [{
+				url : 'img/01.jpg'
+			},{
+				url : 'img/02.jpg'
+			},{
+				url : 'img/03.jpg'
+			},{
+				url : 'img/04.jpg'
+			},{
+				url : 'img/05.jpg'
+			}];
+			$scope.renderFinish = function() {
+				var swiper = new Swiper('.swiper-container', {
+					pagination: '.swiper-pagination',
+					paginationClickable: true,
+					spaceBetween: 30,
+				});
+				console.log('我执行这个函数了')
+			};
+			$scope.isSearch = false;
+			$scope.search = function() {
+				$scope.isSearch = true;
+			};
+			$scope.searchName = '';
+			$scope.cancel = function() {
+				$scope.isSearch = false;
+				$scope.searchName = '';
+			};
+			$scope.isShowActionSheet = false;
+			$scope.showActionSheet = function() {
+				$scope.isShowActionSheet = true;
+			};
+			$scope.hideActionSheet = function() {
+				$scope.isShowActionSheet = false;
+			};
+			$scope.sort = true;
+			$scope.isLoadMore = false;
+			$scope.page = 1;
+			$scope.news = [];
+			$scope.loadMore = function() {
+				$scope.isLoadMore = false;
+				$http.get('http://10.16.155.28:81/news/php/index.php/news_api/show_detail_by_channel_id', {
+					params: {
+						page: $scope.page++,
+						channel_id: 6
+					}
+				}).success(function(data) {
+					console.log(data);
+					$scope.news = $scope.news.concat(data.news_list);
+					$scope.isLoadMore = true;
+				});
+			};
+			$scope.loadMore();
+		}])
+		// 热点控制器
+		.controller('hotCtrl',['$scope','$http',function($scope,$http){
+			$scope.imgList = [{
+				url : 'img/06.jpg'
+			},{
+				url : 'img/07.jpg'
+			},{
+				url : 'img/08.jpg'
+			},{
+				url : 'img/09.jpg'
+			},{
+				url : 'img/10.jpg'
+			}];
+			$scope.renderFinish = function() {
+				var swiper = new Swiper('.swiper-container', {
+					pagination: '.swiper-pagination',
+					paginationClickable: true,
+					spaceBetween: 30,
+				});
+				console.log('我执行这个函数了');
+			};
+			$scope.isSearch = false;
+			$scope.search = function() {
+				$scope.isSearch = true;
+			};
+			$scope.searchName = '';
+			$scope.cancel = function() {
+				$scope.isSearch = false;
+				$scope.searchName = '';
+			};
+			$scope.isShowActionSheet = false;
+			$scope.showActionSheet = function() {
+				$scope.isShowActionSheet = true;
+			};
+			$scope.hideActionSheet = function() {
+				$scope.isShowActionSheet = false;
+			};
+			$scope.sort = true;
+			$scope.isLoadMore = false;
+			$scope.page = 1;
+			$scope.news = [];
+			$scope.loadMore = function() {
+				$scope.isLoadMore = false;
+				$http.get('http://10.16.155.28:81/news/php/index.php/news_api/show_detail_by_channel_id', {
+					params: {
+						page: $scope.page++,
+						channel_id: 7
+					}
+				}).success(function(data) {
+					console.log(data);
+					$scope.news = $scope.news.concat(data.news_list);
+					$scope.isLoadMore = true;
+				});
+			};
+			$scope.loadMore();
+		}])
+		// 娱乐控制器
+		.controller('happyCtrl',['$scope','$http',function($scope,$http){
+			$scope.imgList = [{
+				url : 'img/11.jpg'
+			},{
+				url : 'img/12.jpg'
+			},{
+				url : 'img/13.jpg'
+			},{
+				url : 'img/14.jpg'
+			},{
+				url : 'img/15.jpg'
+			}];
+			$scope.renderFinish = function() {
+				var swiper = new Swiper('.swiper-container', {
+					pagination: '.swiper-pagination',
+					paginationClickable: true,
+					spaceBetween: 30,
+				});
+				console.log('我执行这个函数了')
+			};
+			$scope.isSearch = false;
+			$scope.search = function() {
+				$scope.isSearch = true;
+			};
+			$scope.searchName = '';
+			$scope.cancel = function() {
+				$scope.isSearch = false;
+				$scope.searchName = '';
+			};
+			$scope.isShowActionSheet = false;
+			$scope.showActionSheet = function() {
+				$scope.isShowActionSheet = true;
+			};
+			$scope.hideActionSheet = function() {
+				$scope.isShowActionSheet = false;
+			};
+			$scope.sort = true;
+			$scope.isLoadMore = false;
+			$scope.page = 1;
+			$scope.news = [];
+			$scope.loadMore = function() {
+				$scope.isLoadMore = false;
+				$http.get('http://10.16.155.28:81/news/php/index.php/news_api/show_detail_by_channel_id', {
+					params: {
+						page: $scope.page++,
+						channel_id: 4
+					}
+				}).success(function(data) {
+					console.log(data);
+					$scope.news = $scope.news.concat(data.news_list);
+					$scope.isLoadMore = true;
+				});
+			};
+			$scope.loadMore();
+		}])
+		// 新闻详情页控制器
+		.controller('detailCtrl', ['$scope', '$http', '$state', function($scope, $http, $state) {
+			console.log($state.params);
+			$http.get('http://10.16.155.28:81/news/php/index.php/news_api/show_detail', {
+				params: {
+					id: $state.params.id
+				}
+			}).success(function(data) {
+				console.log(data);
+				$scope.detail_news = data.news_list[0];
+			});
+			$scope.isGallery = false;
+			$scope.imgUrl = '';
+			$scope.gallery = function(imgUrl) {
+				console.log('我点击了图片');
+				$scope.isGallery = true;
+				$scope.imgUrl = imgUrl;
+			}
+		}])
+		// 添加新闻页控制器
+		.controller('insertCtrl',['$scope','$http',function($scope,$http){
+			$scope.submit = function(){
+//				console.log($scope.title);
+//				console.log($scope.text);
+				$http.get('http://localhost:81/news/php/index.php/news_api/insert_news',{
+					params : {
+						title : $scope.title,
+						text : $scope.text
+					}
+				}).success(function(data){
+					console.log(data);
+				});
+			}
+		}])
+		// 登录页面控制器
+		.controller('loginCtrl',['$scope','$http','cookie','$window',function($scope,$http,cookie,$window){
+			$scope.submit = function(){
+//				console.log($scope.username);
+//				console.log($scope.password);
+				$http.post('http://10.16.155.28:81/news/php/index.php/login_api/login',{
+					params : {
+						username : $scope.username,
+						password : $scope.password
+					}
+				}).success(function(data){
+					cookie.setCookie('username',data.user_name);
+					cookie.setCookie('token',data.info.token);
+					$window.location.href = '#/index/recommend';
+				})
+			}
+		}])
+		
+		// 组件化
+		var directives = angular.module('directives', []);
+		directives.directive('wheader', function() {
+			return {
+				templateUrl: "directives/wheader.html"
+			}
+		}).directive('wsearch', function() {
+			return {
+				templateUrl: "directives/wsearch.html"
+			}
+		}).directive('wcarousel', function() {
+			return {
+				templateUrl: "directives/wcarousel.html"
+			}
+		}).directive('repeatFinish', function() {
+			return {
+				link : function(scope,ele,attr){
+					console.log(scope.$index);
+					console.log(scope.$last);
+					if(scope.$last == true){
+						console.log('ng-repeat执行完毕');
+						console.log(attr);
+						// attr获取到的属性只是一个字符串表达式
+						//$scope.$eval方法是专门执行AngularJS表达式的
+						//通过它处理函数得以执行，这样，指令用在不同的地方，可传递不同的处理函数。
+						scope.$eval(attr.repeatFinish);
+					}
+				}
+			}
+		}).directive('wpanel', function() {
+			return {
+				templateUrl: "directives/wpanel.html"
+			}
+		}).directive('wactionsheet', function() {
+			return {
+				templateUrl: "directives/wactionsheet.html"
+			}
+		})
+		
+		// 服务
+		var services = angular.module('services',[]);
+		services.service('cookie',['$document',function($document){
+			return {
+				setCookie : function(name,value){
+					var days = 10;
+					var ex = new Date();
+					ex.setTime(ex.getTime() + days * 24 * 60 * 60 *1000);
+					$document[0].cookie = name + '=' + value + ";expires=" + ex;
+				},
+				getCookie : function(name){
+					var a;
+					var reg = new RegExp('(^|)' +name + "=([^;]*)(;|$)");
+					if(a = $document[0].cookie.match(reg)){
+						return a[2];
+					}
+				}
+			}
+		}])
+	</script>
+
+</html>

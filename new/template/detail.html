@@ -1,0 +1,22 @@
+<article class="weui-article">
+    <h1>{{detail_news.title}}</h1>
+    <section>
+        <!--<h2 class="title">章标题</h2>-->
+        <section>
+            <h3>{{detail_news.title}}</h3>
+            <p>{{detail_news.text}}</p>
+            <p>
+                <img ng-src="{{detail_news.image}}" ng-click="gallery(detail_news.image)" alt="">
+                <img src="img/01.jpg" ng-click="gallery('img/01.jpg')" alt="">
+            </p>
+        </section>
+    </section>
+</article>
+<div class="weui-gallery" style="display: {{isGallery ? 'block' : 'none'}};">
+    <span class="weui-gallery__img" style="background-image: url({{imgUrl}});"></span>
+    <div class="weui-gallery__opr">
+        <a href="javascript:" class="weui-gallery__del" ng-click="isGallery=false">
+            <i class="weui-icon-delete weui-icon_gallery-delete"></i>
+        </a>
+    </div>
+</div>
